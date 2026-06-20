@@ -2,6 +2,19 @@
 
 A small, dependency-free, **fail-closed control layer for autonomous AI agents**.
 
+> **New here? The 30-second version.** AI agents now take real actions on their
+> own: calling tools, spending money, writing to systems. This is the layer
+> that sits in front of an agent and decides, in real time, whether each action
+> is allowed. Safe actions pass. Dangerous, malformed, or over-budget ones are
+> blocked with a reason, and every decision is logged so you can prove what
+> happened. It defaults to *block* and it fails to *block*, so a bug or an
+> outage makes it safer, not riskier. It comes with a live operator dashboard, a
+> 30-test suite that proves the block-by-default behavior holds under malformed
+> and hostile input, and it was extracted from a production system that governed
+> real-money trading agents, where it caught a silently losing agent, a fake
+> $97K "profit" reporting bug, and a hole in a safety gate itself. Start with
+> **[USAGE.md](USAGE.md)** to run it.
+
 Put one choke point in front of everything an agent does. Allow the safe
 actions, block the dangerous ones with a reason, and keep an audit record of
 every decision. Deny by default, fail closed, prove it afterward.
