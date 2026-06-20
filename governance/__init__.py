@@ -29,6 +29,7 @@ from .halt import HaltEngine, HaltState
 from .policy import Policy
 from .registry import AgentCard, AgentRegistry, AgentStatus
 from .review import (CallableReviewer, Reviewer, ReviewPolicy, ReviewResult)
+from .reviewers import LLMReviewer, anthropic_reviewer, openai_reviewer
 from .safety import in_bounds, is_finite
 from .types import (Action, Decision, GateResult, Severity, Verdict)
 
@@ -40,5 +41,6 @@ __all__ = [
     "FiniteInputGate", "RateLimitGate", "BudgetGate", "ThresholdGate",
     "PredicateGate", "HaltEngine", "HaltState", "AuditTrail", "AuditRecord",
     "AgentRegistry", "AgentCard", "AgentStatus", "ReviewPolicy", "Reviewer",
-    "ReviewResult", "CallableReviewer", "is_finite", "in_bounds", "__version__",
+    "ReviewResult", "CallableReviewer", "LLMReviewer", "anthropic_reviewer",
+    "openai_reviewer", "is_finite", "in_bounds", "__version__",
 ]

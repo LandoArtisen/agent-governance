@@ -1,5 +1,7 @@
 # governance
 
+[![CI](https://github.com/LandoArtisen/governance/actions/workflows/ci.yml/badge.svg)](https://github.com/LandoArtisen/governance/actions/workflows/ci.yml)
+
 A small, dependency-free, **fail-closed control layer for autonomous AI agents**.
 
 > **New here? The 30-second version.** AI agents now take real actions on their
@@ -92,6 +94,34 @@ It is built on the Python standard library (no framework), and it exposes a
 small JSON API (`/api/state`, `/api/action`, `/api/halt`, `/api/resume`) so
 any front end can drive it. A React dashboard built on that same API lives in
 [`dashboard/`](dashboard).
+
+## Live second-model review
+
+The review gate takes any callable, so in production it can be a real,
+independent model with a skeptical prompt. A ready-made adapter ships with the
+library:
+
+```bash
+pip install -e ".[anthropic]"          # or ".[openai]" for a GPT reviewer
+export ANTHROPIC_API_KEY=...
+python examples/llm_reviewer_demo.py    # runs a live Claude reviewer if the key is set
+```
+
+```python
+from governance import Governor, ReviewPolicy, anthropic_reviewer
+
+gov = Governor(
+    policy=policy,
+    review=ReviewPolicy([anthropic_reviewer(model="claude-haiku-4-5")],
+                        risk_threshold=0.7),
+)
+```
+
+It defaults to Claude Haiku 4.5, the cheap fast tier, which is the right pick
+for a check that runs on every risky action. The adapter is fail-closed: the
+model must answer with an explicit APPROVE, and a crash, a timeout, a refusal,
+or any unparseable reply resolves to DENY. With no API key the demo falls back
+to an offline stub so it still runs anywhere.
 
 ## Provenance
 

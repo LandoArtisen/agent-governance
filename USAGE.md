@@ -94,18 +94,40 @@ def run_tool(agent_id, tool_name, args, cost=0.0, risk=0.0):
 ## 6. Plugging in a real second-model reviewer
 
 The review gate takes any callable. In production it is a second LLM with a
-skeptical prompt.
+skeptical prompt. A ready-made adapter ships with the library, so you usually
+do not have to write the call yourself:
+
+```bash
+pip install -e ".[anthropic]"     # or ".[openai]" for a GPT reviewer
+export ANTHROPIC_API_KEY=...
+```
+
+```python
+from governance import Governor, ReviewPolicy, anthropic_reviewer
+
+gov = Governor(policy=policy,
+               review=ReviewPolicy([anthropic_reviewer(model="claude-haiku-4-5")],
+                                   risk_threshold=0.7))
+```
+
+`anthropic_reviewer` (Claude) and `openai_reviewer` (GPT) default to the cheap
+fast tier, send the action to the model with a skeptical prompt, and parse its
+verdict. They are fail-closed: the model must reply with an explicit APPROVE,
+and a crash, timeout, refusal, or unparseable answer denies. Run
+`python3 examples/llm_reviewer_demo.py` to see it (it uses a live reviewer if a
+key is set, an offline stub otherwise).
+
+If you want full control, plug in your own function instead:
 
 ```python
 from governance import ReviewPolicy, CallableReviewer, ReviewResult
 
-def llm_reviewer(action):
-    # call a second model; return approve/deny with a reason
+def my_reviewer(action):
     approved, why = ask_other_model(action)   # your code
     return ReviewResult(approved, why, "reviewer-2")
 
 gov = Governor(policy=policy,
-               review=ReviewPolicy([CallableReviewer("reviewer-2", llm_reviewer)],
+               review=ReviewPolicy([CallableReviewer("reviewer-2", my_reviewer)],
                                    risk_threshold=0.7))
 ```
 

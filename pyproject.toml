@@ -27,3 +27,5 @@ include = ["governance*"]
 
 [project.optional-dependencies]
 dev = ["pytest"]
+anthropic = ["anthropic>=0.40"]   # live Claude reviewer (governance.reviewers)
+openai = ["openai>=1.40"]          # live GPT reviewer (governance.reviewers)
