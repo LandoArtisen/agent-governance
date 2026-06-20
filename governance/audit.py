@@ -22,6 +22,7 @@ import uuid
 from dataclasses import asdict, dataclass, field
 from typing import Any, Optional
 
+from .canonical import canonical_hash
 from .types import Action, Verdict
 
 # The hash that precedes the very first record. A fixed, well-known anchor so
@@ -60,11 +61,12 @@ class AuditRecord:
 
         Recomputing this and comparing to the stored entry_hash is how a
         mutated record is caught; including prev_hash is what binds each record
-        to its predecessor so a deletion cannot be hidden.
+        to its predecessor so a deletion cannot be hidden. The body is
+        serialized with RFC 8785 JCS, so the digest is identical no matter which
+        implementation or language computed it.
         """
         body = {k: v for k, v in asdict(self).items() if k != "entry_hash"}
-        blob = json.dumps(body, sort_keys=True, default=str).encode("utf-8")
-        return hashlib.sha256(blob).hexdigest()
+        return canonical_hash(body)
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), default=str)

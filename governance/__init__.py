@@ -21,6 +21,7 @@ Quick start:
 from __future__ import annotations
 
 from .audit import AuditRecord, AuditTrail, GENESIS_HASH
+from .canonical import canonical_hash, canonicalize
 from .capability import CapabilityAuthority, CapabilityGate, CapabilityToken
 from .gates import (BudgetGate, FiniteInputGate, Gate, GateCascade,
                     KillSwitchGate, PermissionGate, PredicateGate,
@@ -31,7 +32,7 @@ from .policy import Policy
 from .registry import AgentCard, AgentRegistry, AgentStatus
 from .review import (CallableReviewer, Reviewer, ReviewPolicy, ReviewResult)
 from .reviewers import (HardenedReviewer, LLMReviewer, anthropic_reviewer,
-                        openai_reviewer)
+                        openai_reviewer, reorder_payload)
 from .safety import in_bounds, is_finite
 from .types import (Action, Decision, GateResult, Severity, Verdict)
 
@@ -44,7 +45,8 @@ __all__ = [
     "PredicateGate", "HaltEngine", "HaltState", "AuditTrail", "AuditRecord",
     "GENESIS_HASH", "AgentRegistry", "AgentCard", "AgentStatus", "ReviewPolicy",
     "Reviewer", "ReviewResult", "CallableReviewer", "LLMReviewer",
-    "HardenedReviewer", "anthropic_reviewer", "openai_reviewer",
-    "CapabilityAuthority", "CapabilityToken", "CapabilityGate",
+    "HardenedReviewer", "reorder_payload", "anthropic_reviewer",
+    "openai_reviewer", "CapabilityAuthority", "CapabilityToken",
+    "CapabilityGate", "canonicalize", "canonical_hash",
     "is_finite", "in_bounds", "__version__",
 ]

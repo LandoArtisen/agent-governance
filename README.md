@@ -63,8 +63,8 @@ non-negotiable properties baked in:
 | `GateCascade` + `Gate`s | Ordered, fail-closed policy checks (kill switch, permission, finite-input, rate limit, budget, threshold, custom predicate). |
 | `HaltEngine` | Latching kill switch and metric tripwires. A bad or missing metric halts. |
 | `ReviewPolicy` | Cross-model / independent review. A second reviewer must approve high-risk actions; an unreachable reviewer rejects. |
-| `HardenedReviewer` | Turns a non-deterministic model into a verdict you can gate on: samples it N times, requires quorum **and** self-agreement, and denies a wavering panel. A wobbly model is a broken instrument. |
-| `AuditTrail` | Hash-chained, tamper-evident record of every decision, exportable as JSONL. `verify_chain()` catches any mutated or deleted record. |
+| `HardenedReviewer` | Turns a non-deterministic model into a verdict you can gate on: samples it N times, requires quorum **and** self-agreement, denies a wavering panel, and can sample across cosmetic perturbations so an order-biased verdict fails closed too. A wobbly model is a broken instrument. |
+| `AuditTrail` | Hash-chained, tamper-evident record of every decision, exportable as JSONL. Hashes use RFC 8785 JCS so they verify identically across implementations; `verify_chain()` catches any mutated or deleted record. |
 | `CapabilityAuthority` + `CapabilityToken` | Signed, scoped, revocable grants. Revoke one token and every pending action under it stops at the gate. |
 | `AgentRegistry` + `AgentCard` | Who each agent is, what it may do, its data sources, and its reliability. Unknown agent means denied. |
 | `Policy` | Declarative config that compiles into a cascade. Policy lives in data, not code. |
@@ -76,10 +76,15 @@ makes it safe to gate on, with the same doctrine the halt engine applies to a me
 an unreliable instrument fails closed.
 
 ```python
-from governance import ReviewPolicy, HardenedReviewer, anthropic_reviewer
+from governance import (ReviewPolicy, HardenedReviewer, anthropic_reviewer,
+                        reorder_payload)
 
-# Three samples, unanimous approval, any split treated as instability.
-reviewer = HardenedReviewer(anthropic_reviewer(), samples=3, timeout_s=10.0)
+# Four samples, unanimous approval, any split treated as instability. Sampling
+# across reorder_payload means an order-biased flip is caught too: the model is
+# graded on the same action spelled two ways and must agree with itself. (Note:
+# a stronger reviewer model is not a fairer one, so pick for fairness, not size.)
+reviewer = HardenedReviewer(anthropic_reviewer(), samples=4, timeout_s=10.0,
+                            perturbations=[reorder_payload])
 gov = Governor(policy=policy, review=ReviewPolicy([reviewer], risk_threshold=0.7))
 ```
 

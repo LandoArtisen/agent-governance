@@ -23,6 +23,14 @@ The mechanism, in one breath:
   5. The confidence (approvals / samples) is attached to the result so the
      caller can escalate severity when a borderline action only barely cleared.
 
+On top of model jitter there is a second, documented failure mode: order and
+framing bias. LLM judges are known to flip a verdict when superficial,
+decision-irrelevant details change. So the reviewer can also sample across
+`perturbations`: cosmetic rewrites of the same action that a sound reviewer
+must judge identically. A verdict that depends on payload key order is not a
+verdict, and it surfaces as instability through the very same tripwire. The
+ready-made `reorder_payload` gives you this with no configuration.
+
 The default is the strict one: three samples, unanimous approval required, any
 split treated as instability. Loosen it deliberately, never by accident.
 """
@@ -30,10 +38,30 @@ from __future__ import annotations
 
 import time
 from concurrent.futures import ThreadPoolExecutor
-from typing import Optional
+from dataclasses import replace
+from typing import Callable, Optional
 
 from ..review import Reviewer, ReviewResult
 from ..types import Action
+
+# A perturbation is a cosmetic, semantics-preserving rewrite of an action.
+Perturbation = Callable[[Action], Action]
+
+
+def reorder_payload(action: Action) -> Action:
+    """Return the same action with payload key order and list order reversed.
+
+    Dict key order and list order carry no meaning for a safety decision, so a
+    reviewer that judges this differently from the original is order-biased.
+    The action_id is preserved: it is the same action, only spelled differently.
+    """
+    def rev(v: object) -> object:
+        if isinstance(v, dict):
+            return {k: rev(v[k]) for k in reversed(list(v.keys()))}
+        if isinstance(v, list):
+            return [rev(x) for x in reversed(v)]
+        return v
+    return replace(action, payload=rev(action.payload))
 
 
 def _coerce_deny(out: object, reason: str) -> ReviewResult:
@@ -57,6 +85,7 @@ class HardenedReviewer:
                  min_approvals: Optional[int] = None,
                  stability_floor: float = 1.0,
                  timeout_s: Optional[float] = None,
+                 perturbations: Optional[list[Perturbation]] = None,
                  name: str = "hardened"):
         if samples < 1:
             raise ValueError("samples must be >= 1")
@@ -68,6 +97,9 @@ class HardenedReviewer:
         # means any dissent at all is treated as instability.
         self.stability_floor = stability_floor
         self.timeout_s = timeout_s
+        # The action variants the panel votes over. The first is always the
+        # action as given; perturbations are cosmetic rewrites it must match.
+        self.perturbations = list(perturbations or [])
         self.name = name
 
     def _one_sample(self, action: Action) -> ReviewResult:
@@ -80,11 +112,21 @@ class HardenedReviewer:
 
     def __call__(self, action: Action) -> ReviewResult:
         results: list[ReviewResult] = []
+        # Round-robin each sample slot across the action variants, so model
+        # jitter and order/framing bias both feed the same stability number. A
+        # perturbation that itself blows up means we cannot verify robustness,
+        # so we fail closed rather than silently skipping the check.
+        try:
+            variants = [action] + [p(action) for p in self.perturbations]
+        except Exception as exc:  # noqa: BLE001 - a broken perturbation denies
+            return ReviewResult(
+                False, f"perturbation_error:{type(exc).__name__}", self.name, 0.0)
         # Run the samples concurrently, each under a shared deadline. A sample
         # that does not return in time is a DENY, exactly like a crash.
         deadline = None if self.timeout_s is None else time.monotonic() + self.timeout_s
         with ThreadPoolExecutor(max_workers=self.samples) as pool:
-            futures = [pool.submit(self._one_sample, action) for _ in range(self.samples)]
+            futures = [pool.submit(self._one_sample, variants[i % len(variants)])
+                       for i in range(self.samples)]
             for fut in futures:
                 remaining = None
                 if deadline is not None:
