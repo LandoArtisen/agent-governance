@@ -20,7 +20,8 @@ Quick start:
 """
 from __future__ import annotations
 
-from .audit import AuditRecord, AuditTrail
+from .audit import AuditRecord, AuditTrail, GENESIS_HASH
+from .capability import CapabilityAuthority, CapabilityGate, CapabilityToken
 from .gates import (BudgetGate, FiniteInputGate, Gate, GateCascade,
                     KillSwitchGate, PermissionGate, PredicateGate,
                     RateLimitGate, ThresholdGate)
@@ -29,7 +30,8 @@ from .halt import HaltEngine, HaltState
 from .policy import Policy
 from .registry import AgentCard, AgentRegistry, AgentStatus
 from .review import (CallableReviewer, Reviewer, ReviewPolicy, ReviewResult)
-from .reviewers import LLMReviewer, anthropic_reviewer, openai_reviewer
+from .reviewers import (HardenedReviewer, LLMReviewer, anthropic_reviewer,
+                        openai_reviewer)
 from .safety import in_bounds, is_finite
 from .types import (Action, Decision, GateResult, Severity, Verdict)
 
@@ -40,7 +42,9 @@ __all__ = [
     "GateResult", "Gate", "GateCascade", "KillSwitchGate", "PermissionGate",
     "FiniteInputGate", "RateLimitGate", "BudgetGate", "ThresholdGate",
     "PredicateGate", "HaltEngine", "HaltState", "AuditTrail", "AuditRecord",
-    "AgentRegistry", "AgentCard", "AgentStatus", "ReviewPolicy", "Reviewer",
-    "ReviewResult", "CallableReviewer", "LLMReviewer", "anthropic_reviewer",
-    "openai_reviewer", "is_finite", "in_bounds", "__version__",
+    "GENESIS_HASH", "AgentRegistry", "AgentCard", "AgentStatus", "ReviewPolicy",
+    "Reviewer", "ReviewResult", "CallableReviewer", "LLMReviewer",
+    "HardenedReviewer", "anthropic_reviewer", "openai_reviewer",
+    "CapabilityAuthority", "CapabilityToken", "CapabilityGate",
+    "is_finite", "in_bounds", "__version__",
 ]

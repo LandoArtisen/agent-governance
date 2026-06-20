@@ -50,15 +50,22 @@ class Policy:
         return cls.from_json(text)
 
     # --- compile to a cascade ------------------------------------------
-    def build_cascade(self) -> GateCascade:
+    def build_cascade(self, capability_authority: Any = None) -> GateCascade:
         """Compile the declarative policy into an ordered, fail-closed cascade.
 
         Order matters. The kill switch is always first. Permission and input
-        validity come before the cheaper business rules.
+        validity come before the cheaper business rules. When a capability
+        authority is supplied, a CapabilityGate sits right after the static
+        permission check, so a token can be required on top of the allowlist.
         """
         gates: list = [KillSwitchGate()]
         # Permission: empty allowed_kinds means deny everything (safe default).
         gates.append(PermissionGate(self.allowed_kinds))
+        if capability_authority is not None:
+            # Imported lazily: the core cascade has no capability dependency
+            # unless an authority is actually wired in.
+            from .capability import CapabilityGate
+            gates.append(CapabilityGate(capability_authority))
         if self.finite_fields:
             bounds = {k: (v[0] if v else None, v[1] if v and len(v) > 1 else None)
                       for k, v in self.finite_fields.items()}

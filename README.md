@@ -63,9 +63,52 @@ non-negotiable properties baked in:
 | `GateCascade` + `Gate`s | Ordered, fail-closed policy checks (kill switch, permission, finite-input, rate limit, budget, threshold, custom predicate). |
 | `HaltEngine` | Latching kill switch and metric tripwires. A bad or missing metric halts. |
 | `ReviewPolicy` | Cross-model / independent review. A second reviewer must approve high-risk actions; an unreachable reviewer rejects. |
-| `AuditTrail` | Append-only, queryable record of every decision, exportable as JSONL. |
+| `HardenedReviewer` | Turns a non-deterministic model into a verdict you can gate on: samples it N times, requires quorum **and** self-agreement, and denies a wavering panel. A wobbly model is a broken instrument. |
+| `AuditTrail` | Hash-chained, tamper-evident record of every decision, exportable as JSONL. `verify_chain()` catches any mutated or deleted record. |
+| `CapabilityAuthority` + `CapabilityToken` | Signed, scoped, revocable grants. Revoke one token and every pending action under it stops at the gate. |
 | `AgentRegistry` + `AgentCard` | Who each agent is, what it may do, its data sources, and its reliability. Unknown agent means denied. |
 | `Policy` | Declarative config that compiles into a cascade. Policy lives in data, not code. |
+
+### Hardening a stochastic reviewer
+
+A single model call is a coin flip you are treating as a verdict. `HardenedReviewer`
+makes it safe to gate on, with the same doctrine the halt engine applies to a metric:
+an unreliable instrument fails closed.
+
+```python
+from governance import ReviewPolicy, HardenedReviewer, anthropic_reviewer
+
+# Three samples, unanimous approval, any split treated as instability.
+reviewer = HardenedReviewer(anthropic_reviewer(), samples=3, timeout_s=10.0)
+gov = Governor(policy=policy, review=ReviewPolicy([reviewer], risk_threshold=0.7))
+```
+
+### Capability tokens
+
+```python
+from governance import Governor, Policy, Action, CapabilityAuthority
+
+auth = CapabilityAuthority(secret=os.environ["GOV_CAP_SECRET"])
+gov = Governor(policy=Policy(allowed_kinds=["send_money"]),
+               capability_authority=auth, require_registration=False)
+
+tok = auth.issue("agent-1", ["send_money"], ttl_seconds=300)
+gov.govern(Action("agent-1", "send_money", value=10.0,
+                  payload={"capability": tok.to_dict()}))   # allowed
+auth.revoke(tok.token_id)                                    # every later use blocks
+```
+
+## What this is not (and how to plug it in)
+
+This is the decision spine, deliberately small. Two things it does not do, by design,
+because dedicated tools already do them well. Both are clean seams, not gaps.
+
+- **It does not sandbox execution.** It decides; it does not contain. Wrap the executor
+  in your own sandbox (or Microsoft's Agent Hypervisor) and call `gov.govern(...)` before
+  you run the tool.
+- **It does not detect prompt injection or PII.** That is a content-scanning arms race
+  owned by tools like LlamaFirewall. Plug one in as a `PredicateGate` or as a `Reviewer`,
+  and its verdict flows through the same fail-closed cascade and audit trail.
 
 ## Run it
 

@@ -16,6 +16,8 @@ response that is not an explicit approval resolves to DENY.
 """
 from __future__ import annotations
 
+from .hardened import HardenedReviewer
 from .llm import LLMReviewer, anthropic_reviewer, openai_reviewer
 
-__all__ = ["LLMReviewer", "anthropic_reviewer", "openai_reviewer"]
+__all__ = ["LLMReviewer", "anthropic_reviewer", "openai_reviewer",
+           "HardenedReviewer"]

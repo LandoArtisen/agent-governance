@@ -12,7 +12,7 @@ plug-in, so the framework stays domain and vendor agnostic.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Protocol
+from typing import Callable, Optional, Protocol
 
 from .types import Action
 
@@ -22,6 +22,10 @@ class ReviewResult:
     approved: bool
     reason: str = ""
     reviewer: str = "reviewer"
+    # Optional 0..1 confidence in this verdict. A deterministic reviewer leaves
+    # it None; a hardened reviewer over a stochastic model sets it from the
+    # agreement across samples, so a wobbly model lowers, not raises, trust.
+    confidence: Optional[float] = None
 
 
 class Reviewer(Protocol):

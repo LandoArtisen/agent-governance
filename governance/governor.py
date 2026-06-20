@@ -30,10 +30,11 @@ class Governor:
                  halt: Optional[HaltEngine] = None,
                  review: Optional[ReviewPolicy] = None,
                  audit: Optional[AuditTrail] = None,
-                 require_registration: bool = True):
+                 require_registration: bool = True,
+                 capability_authority: Any = None):
         if cascade is None:
             policy = policy or Policy()
-            cascade = policy.build_cascade()
+            cascade = policy.build_cascade(capability_authority=capability_authority)
         self.policy = policy
         self.cascade = cascade
         self.registry = registry or AgentRegistry()
