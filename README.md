@@ -65,6 +65,21 @@ refund, blocks an unpermitted action, an unregistered agent, and a malformed
 benching everything. The test suite includes a fuzz pass that throws thousands
 of malformed inputs at the gates and asserts they never ALLOW.
 
+## Console (web UI)
+
+A dependency-free operator console ships with the library: the agent
+registry, a live feed of every decision, the kill switch, and a form to
+submit a test action and watch it pass or get blocked.
+
+```bash
+python examples/run_console.py     # then open http://127.0.0.1:8900
+```
+
+It is built on the Python standard library (no framework), and it exposes a
+small JSON API (`/api/state`, `/api/action`, `/api/halt`, `/api/resume`) so
+any front end can drive it. A React dashboard built on that same API lives in
+[`dashboard/`](dashboard).
+
 ## Provenance
 
 This is the governance spine of a real, high-stakes autonomous system,
