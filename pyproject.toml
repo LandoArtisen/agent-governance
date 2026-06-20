@@ -20,7 +20,7 @@ classifiers = [
 dependencies = []  # standard library only, on purpose
 
 [project.urls]
-Homepage = "https://github.com/LandoArtisen/governance"
+Homepage = "https://github.com/LandoArtisen/agent-governance"
 
 [tool.setuptools.packages.find]
 include = ["governance*"]

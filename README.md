@@ -1,6 +1,6 @@
 # governance
 
-[![CI](https://github.com/LandoArtisen/governance/actions/workflows/ci.yml/badge.svg)](https://github.com/LandoArtisen/governance/actions/workflows/ci.yml)
+[![CI](https://github.com/LandoArtisen/agent-governance/actions/workflows/ci.yml/badge.svg)](https://github.com/LandoArtisen/agent-governance/actions/workflows/ci.yml)
 
 A small, dependency-free, **fail-closed control layer for autonomous AI agents**.
 
