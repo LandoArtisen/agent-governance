@@ -8,12 +8,12 @@ version = "0.1.0"
 description = "A domain-agnostic, fail-closed control layer for autonomous AI agents."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = { text = "PolyForm-Noncommercial-1.0.0" }
 authors = [{ name = "Tyler B. Cantrell" }]
 keywords = ["ai-governance", "agents", "guardrails", "fail-closed", "audit", "kill-switch"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
+  "License :: Other/Proprietary License",
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Libraries",
 ]

@@ -93,4 +93,6 @@ non-finite value slipping past a magnitude check, now the reason
 
 ## License
 
-MIT.
+PolyForm Noncommercial 1.0.0. Free for personal, research, and noncommercial
+use. Commercial use requires a separate license from the author. See
+[LICENSE](LICENSE), and [USAGE.md](USAGE.md) for how to run and integrate it.
