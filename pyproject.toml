@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "governance"
+version = "0.1.0"
+description = "A domain-agnostic, fail-closed control layer for autonomous AI agents."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Tyler B. Cantrell" }]
+keywords = ["ai-governance", "agents", "guardrails", "fail-closed", "audit", "kill-switch"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries",
+]
+dependencies = []  # standard library only, on purpose
+
+[project.urls]
+Homepage = "https://github.com/LandoArtisen/governance"
+
+[tool.setuptools.packages.find]
+include = ["governance*"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
